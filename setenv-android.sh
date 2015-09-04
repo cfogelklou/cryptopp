@@ -17,18 +17,27 @@
 # _ANDROID_NDK="android-ndk-r8e"
 #_ANDROID_NDK="android-ndk-r9"
 # _ANDROID_NDK="android-ndk-r10"
-_ANDROID_NDK=${_ANDROID_NDK:-"android-ndk-r10"}
+_ANDROID_NDK=${_ANDROID_NDK:-"android-ndk-r10e"}
 
 # Set _ANDROID_EABI to the EABI you want to use. You can find the
 # list in $ANDROID_NDK_ROOT/toolchains. This value is always used.
 # _ANDROID_EABI="x86-4.6"
 # _ANDROID_EABI="arm-linux-androideabi-4.6"
-_ANDROID_EABI="arm-linux-androideabi-4.9"
+if [ -z "$_ANDROID_EABI" ]; then
+  _ANDROID_EABI="arm-linux-androideabi-4.9"
+fi
+
+if [ -z "$_ANDROID_EABI_PREBUILT" ]; then
+  _ANDROID_EABI_PREBUILT="arm-linux-androideabi"
+  #_ANDROID_EABI_PREBUILT="i686-linux-android"
+fi
 
 # Set _ANDROID_ARCH to the architecture you are building for.
 # This value is always used.
 # _ANDROID_ARCH=arch-x86
-_ANDROID_ARCH=arch-arm
+if [ -z "$_ANDROID_ARCH" ]; then
+  _ANDROID_ARCH=arch-arm
+fi
 
 # Set _ANDROID_API to the API you want to use. You should set it
 # to one of: android-14, android-9, android-8, android-14, android-5
@@ -214,6 +223,8 @@ export SYSROOT="$ANDROID_SYSROOT"
 export NDK_SYSROOT="$ANDROID_SYSROOT"
 export ANDROID_NDK_SYSROOT="$ANDROID_SYSROOT"
 export ANDROID_API="$_ANDROID_API"
+export BINTOOLSPATH="$ANDROID_TOOLCHAIN/../$_ANDROID_EABI_PREBUILT/bin"
+export RANLIB="$BINTOOLSPATH/ranlib"
 
 # CROSS_COMPILE and ANDROID_DEV are DFW (Don't Fiddle With). Its used by OpenSSL build system.
 # export CROSS_COMPILE="arm-linux-androideabi-"
@@ -230,5 +241,7 @@ if [ ! -z "$VERBOSE" ] && [ "$VERBOSE" != "0" ]; then
   echo "ANDROID_TOOLCHAIN: $ANDROID_TOOLCHAIN"
   echo "FIPS_SIG: $FIPS_SIG"
   echo "CROSS_COMPILE: $CROSS_COMPILE"
-  echo "ANDROID_DEV: $ANDROID_DEV"
+  echo "ANDROID_DEV: $ANDROID_DEV"find
+  echo "BINTOOLSPATH=$BINTOOLSPATH"
+  echo "RANLIB=$RANLIB"
 fi
