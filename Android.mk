@@ -22,100 +22,148 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/..
 
 LOCAL_C_FLAGS += -O3 -I$ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/4.9/include/ -I$ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/4.9/libs/$ANDROID_ARCH/include
 LOCAL_CFLAGS +=  -O3 -I$ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/4.9/include/ -I$ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/4.9/libs/$ANDROID_ARCH/include
-CXXFLAGS += LOCAL_C_FLAGS
-CXXFLAGS += -I/Users/chris/Library/Android/android-ndk-r10e/sources/cxx-stl/gnu-libstdc++/4.9/include/
 
-#################################################################
-# Sources, objects and temporaries
 
-# List of sources to compile and objects to link
-WIN_SRCS = pch.cpp fipsalgt.cpp cryptlib_bds.cpp winpipes.cpp
-SRCS = $(filter-out $(WIN_SRCS), $(wildcard *.cpp))
-OBJS = $(SRCS:.cpp=.o)
-
-# Compiling with --save-temps creates these
-TEMPS = $(SRCS:.cpp=.s) $(SRCS:.cpp=.ii)
-
-# test.o needs to be after bench.o for cygwin 1.1.4 (possible ld bug?)
-TESTOBJS = bench.o bench2.o test.o validat1.o validat2.o validat3.o adhoc.o datatest.o regtest.o fipsalgt.o dlltest.o
-LIBOBJS = $(filter-out $(TESTOBJS),$(OBJS))
-
-DLLSRCS = algebra.cpp algparam.cpp asn.cpp basecode.cpp cbcmac.cpp channels.cpp cryptlib.cpp des.cpp dessp.cpp dh.cpp dll.cpp dsa.cpp ec2n.cpp eccrypto.cpp ecp.cpp eprecomp.cpp files.cpp filters.cpp fips140.cpp fipstest.cpp gf2n.cpp gfpcrypt.cpp hex.cpp hmac.cpp integer.cpp iterhash.cpp misc.cpp modes.cpp modexppc.cpp mqueue.cpp nbtheory.cpp oaep.cpp osrng.cpp pch.cpp pkcspad.cpp pubkey.cpp queue.cpp randpool.cpp rdtables.cpp rijndael.cpp rng.cpp rsa.cpp sha.cpp simple.cpp skipjack.cpp strciphr.cpp trdlocal.cpp
-DLLOBJS = $(DLLSRCS:.cpp=.export.o)
-
-#################################################################
-# Recipes
-
-# For various targets, see https://www.gnu.org/prep/standards/html_node/Standard-Targets.html
-# We want to include libcryptopp, cryptest, clean, distclean, install, install-strip, uninstall
-
-all cryptest: cryptest.exe
-static: libcryptopp.a
-shared dynamic: libcryptopp.so
-
-test: cryptest.exe
-	./cryptest.exe v
-
-.PHONY: clean
-clean:
-	-$(RM) cryptest.exe libcryptopp.a libcryptopp.so GNUmakefile.deps $(LIBOBJS) $(DLLOBJS) $(TESTOBJS)
-	-$(RM) -r *.dSYM
-
-.PHONY: install
-install:
-	$(MKDIR) -p $(PREFIX)/include/cryptopp $(PREFIX)/lib $(PREFIX)/bin
-	-$(CP) *.h $(PREFIX)/include/cryptopp
-	-$(CP) *.a $(PREFIX)/lib
-	-$(CP) *.so $(PREFIX)/lib
-	-$(CP) *.exe $(PREFIX)/bin
-
-.PHONY: remove
-remove:
-	-$(RM) -rf $(PREFIX)/include/cryptopp
-	-$(RM) $(PREFIX)/lib/libcryptopp.a
-	-$(RM) $(PREFIX)/lib/libcryptopp.so
-	-$(RM) $(PREFIX)/bin/cryptest.exe
-
-libcryptopp.a: $(LIBOBJS)
-	$(AR) $(ARFLAGS) $@ $(LIBOBJS)
-	$(RANLIB) $@
-
-libcryptopp.so: $(LIBOBJS)
-	$(CXX) $(CXXFLAGS) -shared -o $@ $(LIBOBJS) $(LDFLAGS) $(LDLIBS)
-
-.PHONY: system.exe
-cryptest.exe: libcryptopp.a $(TESTOBJS)
-	$(CXX) -o $@ $(CXXFLAGS) $(TESTOBJS) ./libcryptopp.a $(LDFLAGS) $(LDLIBS)
-
-adhoc.cpp: adhoc.cpp.proto
-ifeq ($(wildcard adhoc.cpp),)
-	cp adhoc.cpp.proto adhoc.cpp
-else
-	touch adhoc.cpp
-endif
-
-.PHONY: system
-system: ;
-	$(info CXX: $(CXX))
-	$(info CXXFLAGS: $(CXXFLAGS))
-	$(info LDLIBS: $(LDLIBS))
-	$(info GCC_COMPILER: $(GCC_COMPILER))
-	$(info CLANG_COMPILER: $(CLANG_COMPILER))
-	$(info INTEL_COMPILER: $(INTEL_COMPILER))
-	$(info UNALIGNED_ACCESS: $(UNALIGNED_ACCESS))
-	$(info UNAME: $(shell $(UNAME) -a))
-	$(info MACHINE: $(MACHINE))
-	$(info SYSTEM: $(SYSTEM))
-	$(info RELEASE: $(RELEASE))
-
-%.o : %.cpp
-	$(CXX) $(CXXFLAGS) -c $<
+LOCAL_SRC_FILES := 3way.cpp\
+	adhoc.cpp\
+	adler32.cpp\
+	algebra.cpp\
+	algparam.cpp\
+	arc4.cpp\
+	asn.cpp\
+	authenc.cpp\
+	base32.cpp\
+	base64.cpp\
+	basecode.cpp\
+	bench.cpp\
+	bench2.cpp\
+	bfinit.cpp\
+	blowfish.cpp\
+	blumshub.cpp\
+	camellia.cpp\
+	cast.cpp\
+	casts.cpp\
+	cbcmac.cpp\
+	ccm.cpp\
+	channels.cpp\
+	cmac.cpp\
+	cpu.cpp\
+	crc.cpp\
+	cryptlib.cpp\
+	cryptlib_bds.cpp\
+	datatest.cpp\
+	default.cpp\
+	des.cpp\
+	dessp.cpp\
+	dh.cpp\
+	dh2.cpp\
+	dll.cpp\
+	dlltest.cpp\
+	dsa.cpp\
+	eax.cpp\
+	ec2n.cpp\
+	eccrypto.cpp\
+	ecp.cpp\
+	elgamal.cpp\
+	emsa2.cpp\
+	eprecomp.cpp\
+	esign.cpp\
+	files.cpp\
+	filters.cpp\
+	fips140.cpp\
+	fipsalgt.cpp\
+	fipstest.cpp\
+	gcm.cpp\
+	gf256.cpp\
+	gf2_32.cpp\
+	gf2n.cpp\
+	gfpcrypt.cpp\
+	gost.cpp\
+	gzip.cpp\
+	hex.cpp\
+	hmac.cpp\
+	hrtimer.cpp\
+	ida.cpp\
+	idea.cpp\
+	integer.cpp\
+	iterhash.cpp\
+	luc.cpp\
+	mars.cpp\
+	marss.cpp\
+	md2.cpp\
+	md4.cpp\
+	md5.cpp\
+	misc.cpp\
+	modes.cpp\
+	mqueue.cpp\
+	mqv.cpp\
+	nbtheory.cpp\
+	network.cpp\
+	oaep.cpp\
+	osrng.cpp\
+	panama.cpp\
+	pch.cpp\
+	pkcspad.cpp\
+	polynomi.cpp\
+	pssr.cpp\
+	pubkey.cpp\
+	queue.cpp\
+	rabin.cpp\
+	randpool.cpp\
+	rc2.cpp\
+	rc5.cpp\
+	rc6.cpp\
+	rdtables.cpp\
+	regtest.cpp\
+	rijndael.cpp\
+	ripemd.cpp\
+	rng.cpp\
+	rsa.cpp\
+	rw.cpp\
+	safer.cpp\
+	salsa.cpp\
+	seal.cpp\
+	seed.cpp\
+	serpent.cpp\
+	sha.cpp\
+	sha3.cpp\
+	shacal2.cpp\
+	shark.cpp\
+	sharkbox.cpp\
+	simple.cpp\
+	skipjack.cpp\
+	socketft.cpp\
+	sosemanuk.cpp\
+	square.cpp\
+	squaretb.cpp\
+	strciphr.cpp\
+	tea.cpp\
+	test.cpp\
+	tftables.cpp\
+	tiger.cpp\
+	tigertab.cpp\
+	trdlocal.cpp\
+	ttmac.cpp\
+	twofish.cpp\
+	validat0.cpp\
+	validat1.cpp\
+	validat2.cpp\
+	validat3.cpp\
+	vmac.cpp\
+	wait.cpp\
+	wake.cpp\
+	whrlpool.cpp\
+	winpipes.cpp\
+	xtr.cpp\
+	xtrcrypt.cpp\
+	zdeflate.cpp\
+	zinflate.cpp\
+	zlib.cpp
 
 
 LOCAL_MODULE := cryptopp
 
 
-LOCAL_SRC_FILES := $(DLLSRCS)
 
 # Uncomment to compile with profiling
 #LOCAL_CFLAGS += -pg -D_DO_GPROF_PROFILING
