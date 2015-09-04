@@ -18,11 +18,19 @@ include $(CLEAR_VARS)
 
 APP_OPTIM := release
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/.. 
+# Get the architecture info
+ARCH := $(APP_ABI)
 
-LOCAL_C_FLAGS += -O3 -I$ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/4.9/include/ -I$ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/4.9/libs/$ANDROID_ARCH/include
-LOCAL_CFLAGS +=  -O3 -I$ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/4.9/include/ -I$ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/4.9/libs/$ANDROID_ARCH/include
+#@echo $(APP_ABI)
 
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/.. \
+	$(ANDROID_NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/4.9/include/ \
+	$(ANDROID_NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi/include/
+
+#LOCAL_C_FLAGS += -O3 -I$(ANDROID_NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/4.9/include/ -I$(ANDROID_NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi/include/
+#LOCAL_CFLAGS +=  -O3 -I$(ANDROID_NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/4.9/include/ -I$(ANDROID_NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi/include/
+LOCAL_C_FLAGS += -O3
+LOCAL_CFLAGS +=  -O3
 
 LOCAL_SRC_FILES := 3way.cpp\
 	adhoc.cpp\
