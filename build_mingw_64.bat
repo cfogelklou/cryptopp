@@ -4,6 +4,6 @@ set CXXFLAGS=-m64
 make clean
 make
 mkdir win64
-mv *.a win64/
-mv *.exe win64/
+cp *.a win64/
+cp *.exe win64/
 set path=%oldpath%

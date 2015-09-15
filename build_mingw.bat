@@ -3,5 +3,5 @@ make clean
 set CXXFLAGS=-m32
 make
 mkdir win32
-mv *.a win32/
-mv *.exe win32/
+cp *.a win32/
+cp *.exe win32/
