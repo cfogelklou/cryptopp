@@ -10,7 +10,7 @@ mkdir ios_static
 export PLATFORMPATH="/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform"
 export SDKPATH="$PLATFORMPATH/Developer/SDKs/iPhoneOS.sdk"
 export IOS_SYSROOT="$SDKPATH"
-export CXXFLAGS=-miphoneos-version-min=6.1
+export CXXFLAGS="-miphoneos-version-min=6.1 -fembed-bitcode"
 
 #--------------------------
 # Build ARM6
@@ -49,7 +49,7 @@ mv *.a ios_static/$IOS_ARCH/
 export PLATFORMPATH="/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform"
 export SDKPATH="$PLATFORMPATH/Developer/SDKs/iPhoneSimulator.sdk"
 export IOS_SYSROOT="$SDKPATH"
-export CXXFLAGS=-mios-simulator-version-min=6.1
+export CXXFLAGS="-mios-simulator-version-min=6.1 -fembed-bitcode"
 
 #--------------------------
 # Build simulator
