@@ -421,6 +421,12 @@ NAMESPACE_END
 #define CRYPTOPP_UNIX_AVAILABLE
 #endif
 
+#if defined(CRYPTOPP_PAK)
+#if defined(__linux__)
+#define CRYPTOPP_UNIX_AVAILABLE
+#endif
+#endif
+
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #define CRYPTOPP_BSD_AVAILABLE
 #endif

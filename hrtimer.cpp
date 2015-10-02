@@ -14,6 +14,8 @@
 #include <sys/time.h>
 #include <sys/times.h>
 #include <unistd.h>
+#elif defined (EMSCRIPTEN)
+#include <emscripten.h>
 #endif
 
 NAMESPACE_BEGIN(CryptoPP)
@@ -69,6 +71,10 @@ TimerWord Timer::GetCurrentTimerValue()
 	timeval now;
 	gettimeofday(&now, NULL);
 	return (TimerWord)now.tv_sec * 1000000 + now.tv_usec;
+#elif defined(EMSCRIPTEN)
+    const unsigned long long x_msw = (unsigned long long)EM_ASM_INT({ return (Date.now() >> 32);}, 0);
+    const unsigned long long x_lsw = (unsigned long long)EM_ASM_INT({ return (Date.now() >> 0);}, 0);
+	return (TimerWord)((x_msw << 32) | x_lsw);
 #else
 	clock_t now;
 	return clock();
@@ -88,6 +94,8 @@ TimerWord Timer::TicksPerSecond()
 	return freq.QuadPart;
 #elif defined(CRYPTOPP_UNIX_AVAILABLE)
 	return 1000000;
+#elif defined(EMSCRIPTEN)
+    return 1000;
 #else
 	return CLOCKS_PER_SEC;
 #endif
@@ -120,6 +128,10 @@ GetCurrentThreadNotImplemented:
 	tms now;
 	times(&now);
 	return now.tms_utime;
+#elif defined(EMSCRIPTEN)
+    const unsigned long long x_msw = (unsigned long long)EM_ASM_INT({ return (Date.now() >> 32);}, 0);
+    const unsigned long long x_lsw = (unsigned long long)EM_ASM_INT({ return (Date.now() >> 0);}, 0);
+	return (TimerWord)((x_msw << 32) | x_lsw);
 #else
 	return clock();
 #endif
@@ -132,6 +144,8 @@ TimerWord ThreadUserTimer::TicksPerSecond()
 #elif defined(CRYPTOPP_UNIX_AVAILABLE)
 	static const long ticksPerSecond = sysconf(_SC_CLK_TCK);
 	return ticksPerSecond;
+#elif defined(EMSCRIPTEN)
+    return 1000;
 #else
 	return CLOCKS_PER_SEC;
 #endif
