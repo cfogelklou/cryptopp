@@ -72,4 +72,4 @@ mkdir ios_static/$IOS_ARCH
 mv *.a ios_static/$IOS_ARCH/
 
 
-lipo -create ios_static/armv6/libcryptopp.a ios_static/armv7/libcryptopp.a ios_static/arm64/libcryptopp.a ios_static/x86_64/libcryptopp.a ios_static/x86/libcryptopp.a -output ios_static/libcryptopp.a
+lipo -create ios_static/armv6/libcryptopp.a ios_static/armv7/libcryptopp.a ios_static/arm64/libcryptopp.a ios_static/x86_64/libcryptopp.a ios_static/i386/libcryptopp.a -output ios_static/libcryptopp.a
