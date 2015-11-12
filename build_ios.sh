@@ -52,7 +52,7 @@ export IOS_SYSROOT="$SDKPATH"
 export CXXFLAGS="-mios-simulator-version-min=6.1 -fembed-bitcode"
 
 #--------------------------
-# Build simulator
+# Build simulator x86_64
 #--------------------------
 export IOS_ARCH=x86_64
 make -f GNUmakefile-cross clean
@@ -61,4 +61,15 @@ rm -rf ios_static/$IOS_ARCH
 mkdir ios_static/$IOS_ARCH
 mv *.a ios_static/$IOS_ARCH/
 
-lipo -create ios_static/armv6/libcryptopp.a ios_static/armv7/libcryptopp.a ios_static/arm64/libcryptopp.a ios_static/x86_64/libcryptopp.a -output ios_static/libcryptopp.a
+#--------------------------
+# Build simulator i386
+#--------------------------
+export IOS_ARCH=i386
+make -f GNUmakefile-cross clean
+make -f GNUmakefile-cross
+rm -rf ios_static/$IOS_ARCH
+mkdir ios_static/$IOS_ARCH
+mv *.a ios_static/$IOS_ARCH/
+
+
+lipo -create ios_static/armv6/libcryptopp.a ios_static/armv7/libcryptopp.a ios_static/arm64/libcryptopp.a ios_static/x86_64/libcryptopp.a ios_static/x86/libcryptopp.a -output ios_static/libcryptopp.a
