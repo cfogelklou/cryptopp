@@ -41,29 +41,11 @@ LOCAL_SRC_FILES := algebra.cpp algparam.cpp asn.cpp basecode.cpp cbcmac.cpp chan
 
 LOCAL_MODULE := cryptopp
 
-
-
 # Uncomment to compile with profiling
 #LOCAL_CFLAGS += -pg -D_DO_GPROF_PROFILING
 #LOCAL_C_FLAGS += -pg -D_DO_GPROF_PROFILING
 #LOCAL_STATIC_LIBRARIES := cpufeatures android-ndk-profiler
 
-LOCAL_STATIC_LIBRARIES := cpufeatures
-
-# for logging
-LOCAL_LDLIBS += -llog
-# for native asset manager
-#LOCAL_LDLIBS    += -landroid
-
-
 APP_MODULES := cryptopp
-#APP_ABI := armeabi x86 armeabi-v7a
-#APP_ABI := all
 
-include $(BUILD_SHARED_LIBRARY)
-$(call import-module,cpufeatures)
-
-# at the end of Android.mk
-#_DO_GPROF_PROFILING more
-#$(call import-module,android-ndk-profiler)
-
+include $(BUILD_STATIC_LIBRARY)
