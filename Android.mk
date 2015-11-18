@@ -27,8 +27,6 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/.. \
 	$(ANDROID_NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/4.9/include/ \
 	$(ANDROID_NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/4.9/libs/$(ARCH)/include/
 
-#LOCAL_C_INCLUDES += ${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/4.8/include
-
 LOCAL_C_FLAGS += -O3 -DCRYPTOPP_DISABLE_ASM
 LOCAL_CFLAGS +=  -O3 -DCRYPTOPP_DISABLE_ASM
 
@@ -36,7 +34,7 @@ LOCAL_SRC_FILES := algebra.cpp algparam.cpp asn.cpp basecode.cpp cbcmac.cpp chan
 			dll.cpp dsa.cpp ec2n.cpp eccrypto.cpp ecp.cpp emsa2.cpp eprecomp.cpp files.cpp filters.cpp fips140.cpp fipstest.cpp \
 			gf2n.cpp gfpcrypt.cpp hex.cpp hmac.cpp hrtimer.cpp integer.cpp iterhash.cpp misc.cpp modes.cpp mqueue.cpp \
 			nbtheory.cpp oaep.cpp osrng.cpp pch.cpp pkcspad.cpp pssr.cpp pubkey.cpp queue.cpp randpool.cpp rdtables.cpp \
-			rijndael.cpp rng.cpp rsa.cpp sha.cpp simple.cpp skipjack.cpp strciphr.cpp trdlocal.cpp
+			rijndael.cpp rng.cpp rsa.cpp sha.cpp simple.cpp skipjack.cpp strciphr.cpp trdlocal.cpp base64.cpp base32.cpp
 
 
 LOCAL_MODULE := cryptopp
