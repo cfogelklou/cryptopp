@@ -27,8 +27,8 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/.. \
 	$(ANDROID_NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/4.9/include/ \
 	$(ANDROID_NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/4.9/libs/$(ARCH)/include/
 
-#LOCAL_C_FLAGS += -O3 -I$(ANDROID_NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/4.9/include/ -I$(ANDROID_NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi/include/
-#LOCAL_CFLAGS +=  -O3 -I$(ANDROID_NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/4.9/include/ -I$(ANDROID_NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi/include/
+#LOCAL_C_INCLUDES += ${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/4.8/include
+
 LOCAL_C_FLAGS += -O3 -DCRYPTOPP_DISABLE_ASM
 LOCAL_CFLAGS +=  -O3 -DCRYPTOPP_DISABLE_ASM
 
@@ -40,11 +40,6 @@ LOCAL_SRC_FILES := algebra.cpp algparam.cpp asn.cpp basecode.cpp cbcmac.cpp chan
 
 
 LOCAL_MODULE := cryptopp
-
-# Uncomment to compile with profiling
-#LOCAL_CFLAGS += -pg -D_DO_GPROF_PROFILING
-#LOCAL_C_FLAGS += -pg -D_DO_GPROF_PROFILING
-#LOCAL_STATIC_LIBRARIES := cpufeatures android-ndk-profiler
 
 APP_MODULES := cryptopp
 
