@@ -5,7 +5,6 @@
 #ifndef CRYPTOPP_IMPORTS
 
 #include "cmac.h"
-#include "trap.h"
 
 NAMESPACE_BEGIN(CryptoPP)
 
@@ -58,6 +57,7 @@ void CMAC_Base::UncheckedSetKey(const byte *key, unsigned int length, const Name
 
 void CMAC_Base::Update(const byte *input, size_t length)
 {
+	assert((input && length) || !(input || length));
 	if (!length)
 		return;
 
@@ -66,11 +66,14 @@ void CMAC_Base::Update(const byte *input, size_t length)
 
 	if (m_counter > 0)
 	{
-		unsigned int len = UnsignedMin(blockSize - m_counter, length);
-		xorbuf(m_reg+m_counter, input, len);
-		length -= len;
-		input += len;
-		m_counter += len;
+		const unsigned int len = UnsignedMin(blockSize - m_counter, length);
+		if (len)
+		{
+			xorbuf(m_reg+m_counter, input, len);
+			length -= len;
+			input += len;
+			m_counter += len;
+		}
 
 		if (m_counter == blockSize && length > 0)
 		{
@@ -81,7 +84,7 @@ void CMAC_Base::Update(const byte *input, size_t length)
 
 	if (length > blockSize)
 	{
-		CRYPTOPP_ASSERT(m_counter == 0);
+		assert(m_counter == 0);
 		size_t leftOver = 1 + cipher.AdvancedProcessBlocks(m_reg, input, m_reg, length-1, BlockTransformation::BT_DontIncrementInOutPointers|BlockTransformation::BT_XorInput);
 		input += (length - leftOver);
 		length = leftOver;
@@ -89,12 +92,12 @@ void CMAC_Base::Update(const byte *input, size_t length)
 
 	if (length > 0)
 	{
-		CRYPTOPP_ASSERT(m_counter + length <= blockSize);
+		assert(m_counter + length <= blockSize);
 		xorbuf(m_reg+m_counter, input, length);
 		m_counter += (unsigned int)length;
 	}
 
-	CRYPTOPP_ASSERT(m_counter > 0);
+	assert(m_counter > 0);
 }
 
 void CMAC_Base::TruncatedFinal(byte *mac, size_t size)

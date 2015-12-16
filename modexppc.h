@@ -2,8 +2,9 @@
 #define CRYPTOPP_MODEXPPC_H
 
 #include "cryptlib.h"
-#include "integer.h"
 #include "modarith.h"
+#include "integer.h"
+#include "algebra.h"
 #include "eprecomp.h"
 #include "smartptr.h"
 #include "pubkey.h"
@@ -22,8 +23,6 @@ public:
 	const AbstractGroup<Element> & GetGroup() const {return m_mr->MultiplicativeGroup();}
 	Element BERDecodeElement(BufferedTransformation &bt) const {return Integer(bt);}
 	void DEREncodeElement(BufferedTransformation &bt, const Element &v) const {v.DEREncode(bt);}
-
-	virtual ~ModExpPrecomputation() { }
 
 	// non-inherited
 	void SetModulus(const Integer &v) {m_mr.reset(new MontgomeryRepresentation(v));}

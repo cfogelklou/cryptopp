@@ -19,7 +19,9 @@ class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE TimerBase
 {
 public:
 	enum Unit {SECONDS = 0, MILLISECONDS, MICROSECONDS, NANOSECONDS};
-	TimerBase(Unit unit, bool stuckAtZero)	: m_timerUnit(unit), m_stuckAtZero(stuckAtZero), m_started(false) {}
+	TimerBase(Unit unit, bool stuckAtZero)
+		: m_timerUnit(unit), m_stuckAtZero(stuckAtZero), m_started(false)
+		, m_start(0), m_last(0) {}
 
 	virtual TimerWord GetCurrentTimerValue() =0;	// GetCurrentTime is a macro in MSVC 6.0
 	virtual TimerWord TicksPerSecond() =0;	// this is not the resolution, just a conversion factor into seconds
@@ -39,7 +41,7 @@ private:
 //! measure CPU time spent executing instructions of this thread (if supported by OS)
 /*! /note This only works correctly on Windows NT or later. On Unix it reports process time, and others wall clock time.
 */
-class CRYPTOPP_DLL ThreadUserTimer : public TimerBase
+class ThreadUserTimer : public TimerBase
 {
 public:
 	ThreadUserTimer(Unit unit = TimerBase::SECONDS, bool stuckAtZero = false)	: TimerBase(unit, stuckAtZero) {}

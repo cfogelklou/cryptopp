@@ -5,12 +5,11 @@
 
 NAMESPACE_BEGIN(CryptoPP)
 
-
 // Base64
-static const byte s_vec1[] =
+static const byte s_stdVec[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 // Base64URL
-static const byte s_vec2[] =
+static const byte s_urlVec[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 static const byte s_padding = '=';
 
@@ -23,7 +22,7 @@ void Base64Encoder::IsolatedInitialize(const NameValuePairs &parameters)
 	
 	m_filter->Initialize(CombinedNameValuePairs(
 		parameters,
-		MakeParameters(Name::EncodingLookupArray(), &s_vec1[0], false)
+		MakeParameters(Name::EncodingLookupArray(), &s_stdVec[0], false)
 			(Name::PaddingByte(), s_padding)
 			(Name::GroupSize(), insertLineBreaks ? maxLineLength : 0)
 			(Name::Separator(), ConstByteArrayParameter(lineBreak))
@@ -40,7 +39,7 @@ void Base64URLEncoder::IsolatedInitialize(const NameValuePairs &parameters)
 	
 	m_filter->Initialize(CombinedNameValuePairs(
 		parameters,
-		MakeParameters(Name::EncodingLookupArray(), &s_vec2[0], false)
+		MakeParameters(Name::EncodingLookupArray(), &s_urlVec[0], false)
 			(Name::PaddingByte(), s_padding)
 			(Name::GroupSize(), insertLineBreaks ? maxLineLength : 0)
 			(Name::Separator(), ConstByteArrayParameter(lineBreak))
@@ -55,7 +54,7 @@ const int *Base64Decoder::GetDecodingLookupArray()
     
 	if (!s_initialized)
 	{
-		InitializeDecodingLookupArray(s_array, s_vec1, 64, false);
+		InitializeDecodingLookupArray(s_array, s_stdVec, 64, false);
 		s_initialized = true;
 	}
 	return s_array;
@@ -68,7 +67,7 @@ const int *Base64URLDecoder::GetDecodingLookupArray()
     
 	if (!s_initialized)
 	{
-		InitializeDecodingLookupArray(s_array, s_vec2, 64, false);
+		InitializeDecodingLookupArray(s_array, s_urlVec, 64, false);
 		s_initialized = true;
 	}
 	return s_array;

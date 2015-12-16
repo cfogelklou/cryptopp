@@ -2,7 +2,6 @@
 
 #include "pch.h"
 #include "adler32.h"
-#include "trap.h"
 
 NAMESPACE_BEGIN(CryptoPP)
 
@@ -47,8 +46,8 @@ void Adler32::Update(const byte *input, size_t length)
 			s2 %= BASE;
 	}
 
-	CRYPTOPP_ASSERT(s1 < BASE);
-	CRYPTOPP_ASSERT(s2 < BASE);
+	assert(s1 < BASE);
+	assert(s2 < BASE);
 
 	m_s1 = (word16)s1;
 	m_s2 = (word16)s2;
@@ -62,14 +61,19 @@ void Adler32::TruncatedFinal(byte *hash, size_t size)
 	{
 	default:
 		hash[3] = byte(m_s1);
+		// fall through
 	case 3:
 		hash[2] = byte(m_s1 >> 8);
+		// fall through
 	case 2:
 		hash[1] = byte(m_s2);
+		// fall through
 	case 1:
 		hash[0] = byte(m_s2 >> 8);
+		// fall through
 	case 0:
-		;
+		;;
+		// fall through
 	}
 
 	Reset();

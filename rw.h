@@ -1,14 +1,16 @@
+// rw.h - written and placed in the public domain by Wei Dai
+
+//! \file rw.h
+//! \brief Classes for Rabin-Williams signature schemes
+//! \details Rabin-Williams signature schemes as defined in IEEE P1363.
+
 #ifndef CRYPTOPP_RW_H
 #define CRYPTOPP_RW_H
 
-/** \file
-	This file contains classes that implement the
-	Rabin-Williams signature schemes as defined in IEEE P1363.
-*/
 
 #include "cryptlib.h"
-#include "integer.h"
 #include "pubkey.h"
+#include "integer.h"
 
 NAMESPACE_BEGIN(CryptoPP)
 
@@ -50,9 +52,8 @@ class CRYPTOPP_DLL InvertibleRWFunction : public RWFunction, public TrapdoorFunc
 	typedef InvertibleRWFunction ThisClass;
 
 public:
-	InvertibleRWFunction() : m_precompute(false) {}
-
-	void Initialize(const Integer &n, const Integer &p, const Integer &q, const Integer &u);
+	void Initialize(const Integer &n, const Integer &p, const Integer &q, const Integer &u)
+		{m_n = n; m_p = p; m_q = q; m_u = u;}
 	// generate a random private key
 	void Initialize(RandomNumberGenerator &rng, unsigned int modulusBits)
 		{GenerateRandomWithKeySize(rng, modulusBits);}
@@ -82,21 +83,8 @@ public:
 	void SetPrime2(const Integer &q) {m_q = q;}
 	void SetMultiplicativeInverseOfPrime2ModPrime1(const Integer &u) {m_u = u;}
 
-	virtual bool SupportsPrecomputation() const {return true;}
-	virtual void Precompute(unsigned int unused = 0) {PrecomputeTweakedRoots();}
-	virtual void Precompute(unsigned int unused = 0) const {PrecomputeTweakedRoots();}
-
-	virtual void LoadPrecomputation(BufferedTransformation &storedPrecomputation);
-	virtual void SavePrecomputation(BufferedTransformation &storedPrecomputation) const;
-
-protected:
-	void PrecomputeTweakedRoots() const;
-
 protected:
 	Integer m_p, m_q, m_u;
-
-	mutable Integer m_pre_2_9p, m_pre_2_3q, m_pre_q_p;
-	mutable bool m_precompute;
 };
 
 //! RW

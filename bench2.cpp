@@ -1,10 +1,15 @@
 // bench2.cpp - written and placed in the public domain by Wei Dai
 
+#include "cryptlib.h"
+#include "pubkey.h"
+#include "gfpcrypt.h"
+#include "eccrypto.h"
 #include "bench.h"
 #include "validate.h"
-#include "files.h"
-#include "hex.h"
 
+#include "files.h"
+#include "filters.h"
+#include "hex.h"
 #include "rsa.h"
 #include "nr.h"
 #include "dsa.h"
@@ -27,7 +32,13 @@
 #include <iostream>
 #include <iomanip>
 
+// These are noisy enoguh due to test.cpp. Turn them off here.
+#if CRYPTOPP_GCC_DIAGNOSTIC_AVAILABLE
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 USING_NAMESPACE(CryptoPP)
+USING_NAMESPACE(std)
 
 void OutputResultOperations(const char *name, const char *operation, bool pc, unsigned long iterations, double timeTaken);
 
@@ -37,7 +48,7 @@ void BenchMarkEncryption(const char *name, PK_Encryptor &key, double timeTotal, 
 	SecByteBlock plaintext(len), ciphertext(key.CiphertextLength(len));
 	GlobalRNG().GenerateBlock(plaintext, len);
 
-	clock_t start = clock();
+	const clock_t start = clock();
 	unsigned int i;
 	double timeTaken;
 	for (timeTaken=(double)0, i=0; timeTaken < timeTotal; timeTaken = double(clock() - start) / CLOCK_TICKS_PER_SECOND, i++)
@@ -60,7 +71,7 @@ void BenchMarkDecryption(const char *name, PK_Decryptor &priv, PK_Encryptor &pub
 	GlobalRNG().GenerateBlock(plaintext, len);
 	pub.Encrypt(GlobalRNG(), plaintext, len, ciphertext);
 
-	clock_t start = clock();
+	const clock_t start = clock();
 	unsigned int i;
 	double timeTaken;
 	for (timeTaken=(double)0, i=0; timeTaken < timeTotal; timeTaken = double(clock() - start) / CLOCK_TICKS_PER_SECOND, i++)
@@ -75,7 +86,7 @@ void BenchMarkSigning(const char *name, PK_Signer &key, double timeTotal, bool p
 	AlignedSecByteBlock message(len), signature(key.SignatureLength());
 	GlobalRNG().GenerateBlock(message, len);
 
-	clock_t start = clock();
+	const clock_t start = clock();
 	unsigned int i;
 	double timeTaken;
 	for (timeTaken=(double)0, i=0; timeTaken < timeTotal; timeTaken = double(clock() - start) / CLOCK_TICKS_PER_SECOND, i++)
@@ -97,11 +108,15 @@ void BenchMarkVerification(const char *name, const PK_Signer &priv, PK_Verifier 
 	GlobalRNG().GenerateBlock(message, len);
 	priv.SignMessage(GlobalRNG(), message, len, signature);
 
-	clock_t start = clock();
+	const clock_t start = clock();
 	unsigned int i;
 	double timeTaken;
 	for (timeTaken=(double)0, i=0; timeTaken < timeTotal; timeTaken = double(clock() - start) / CLOCK_TICKS_PER_SECOND, i++)
-		pub.VerifyMessage(message, len, signature, signature.size());
+	{
+		// The return value is ignored because we are interested in throughput
+		bool unused = pub.VerifyMessage(message, len, signature, signature.size());
+		CRYPTOPP_UNUSED(unused);
+	}
 
 	OutputResultOperations(name, "Verification", pc, i, timeTaken);
 
@@ -116,7 +131,7 @@ void BenchMarkKeyGen(const char *name, SimpleKeyAgreementDomain &d, double timeT
 {
 	SecByteBlock priv(d.PrivateKeyLength()), pub(d.PublicKeyLength());
 
-	clock_t start = clock();
+	const clock_t start = clock();
 	unsigned int i;
 	double timeTaken;
 	for (timeTaken=(double)0, i=0; timeTaken < timeTotal; timeTaken = double(clock() - start) / CLOCK_TICKS_PER_SECOND, i++)
@@ -135,7 +150,7 @@ void BenchMarkKeyGen(const char *name, AuthenticatedKeyAgreementDomain &d, doubl
 {
 	SecByteBlock priv(d.EphemeralPrivateKeyLength()), pub(d.EphemeralPublicKeyLength());
 
-	clock_t start = clock();
+	const clock_t start = clock();
 	unsigned int i;
 	double timeTaken;
 	for (timeTaken=(double)0, i=0; timeTaken < timeTotal; timeTaken = double(clock() - start) / CLOCK_TICKS_PER_SECOND, i++)
@@ -158,7 +173,7 @@ void BenchMarkAgreement(const char *name, SimpleKeyAgreementDomain &d, double ti
 	d.GenerateKeyPair(GlobalRNG(), priv2, pub2);
 	SecByteBlock val(d.AgreedValueLength());
 
-	clock_t start = clock();
+	const clock_t start = clock();
 	unsigned int i;
 	double timeTaken;
 	for (timeTaken=(double)0, i=0; timeTaken < timeTotal; timeTaken = double(clock() - start) / CLOCK_TICKS_PER_SECOND, i+=2)
@@ -182,7 +197,7 @@ void BenchMarkAgreement(const char *name, AuthenticatedKeyAgreementDomain &d, do
 	d.GenerateEphemeralKeyPair(GlobalRNG(), epriv2, epub2);
 	SecByteBlock val(d.AgreedValueLength());
 
-	clock_t start = clock();
+	const clock_t start = clock();
 	unsigned int i;
 	double timeTaken;
 	for (timeTaken=(double)0, i=0; timeTaken < timeTotal; timeTaken = double(clock() - start) / CLOCK_TICKS_PER_SECOND, i+=2)
@@ -198,6 +213,8 @@ void BenchMarkAgreement(const char *name, AuthenticatedKeyAgreementDomain &d, do
 template <class SCHEME>
 void BenchMarkCrypto(const char *filename, const char *name, double timeTotal, SCHEME *x=NULL)
 {
+	CRYPTOPP_UNUSED(x);
+
 	FileSource f(filename, true, new HexDecoder());
 	typename SCHEME::Decryptor priv(f);
 	typename SCHEME::Encryptor pub(priv);
@@ -209,6 +226,8 @@ void BenchMarkCrypto(const char *filename, const char *name, double timeTotal, S
 template <class SCHEME>
 void BenchMarkSignature(const char *filename, const char *name, double timeTotal, SCHEME *x=NULL)
 {
+	CRYPTOPP_UNUSED(x);
+
 	FileSource f(filename, true, new HexDecoder());
 	typename SCHEME::Signer priv(f);
 	typename SCHEME::Verifier pub(priv);
@@ -220,6 +239,8 @@ void BenchMarkSignature(const char *filename, const char *name, double timeTotal
 template <class D>
 void BenchMarkKeyAgreement(const char *filename, const char *name, double timeTotal, D *x=NULL)
 {
+	CRYPTOPP_UNUSED(x);
+
 	FileSource f(filename, true, new HexDecoder());
 	D d(f);
 	BenchMarkKeyGen(name, d, timeTotal);
@@ -232,22 +253,22 @@ void BenchmarkAll2(double t, double hertz)
 {
 	g_hertz = hertz;
 
-	std::cout << "<TABLE border=1><COLGROUP><COL align=left><COL align=right><COL align=right>" << std::endl;
-	std::cout << "<THEAD><TR><TH>Operation<TH>Milliseconds/Operation" << (g_hertz ? "<TH>Megacycles/Operation" : "") << std::endl;
+	cout << "<TABLE border=1><COLGROUP><COL align=left><COL align=right><COL align=right>" << endl;
+	cout << "<THEAD><TR><TH>Operation<TH>Milliseconds/Operation" << (g_hertz ? "<TH>Megacycles/Operation" : "") << endl;
 
-	std::cout << "\n<TBODY style=\"background: yellow\">";
+	cout << "\n<TBODY style=\"background: yellow\">";
 	BenchMarkCrypto<RSAES<OAEP<SHA> > >("TestData/rsa1024.dat", "RSA 1024", t);
 	BenchMarkCrypto<LUCES<OAEP<SHA> > >("TestData/luc1024.dat", "LUC 1024", t);
 	BenchMarkCrypto<DLIES<> >("TestData/dlie1024.dat", "DLIES 1024", t);
 	BenchMarkCrypto<LUC_IES<> >("TestData/lucc512.dat", "LUCELG 512", t);
 
-	std::cout << "\n<TBODY style=\"background: white\">";
+	cout << "\n<TBODY style=\"background: white\">";
 	BenchMarkCrypto<RSAES<OAEP<SHA> > >("TestData/rsa2048.dat", "RSA 2048", t);
 	BenchMarkCrypto<LUCES<OAEP<SHA> > >("TestData/luc2048.dat", "LUC 2048", t);
 	BenchMarkCrypto<DLIES<> >("TestData/dlie2048.dat", "DLIES 2048", t);
 	BenchMarkCrypto<LUC_IES<> >("TestData/lucc1024.dat", "LUCELG 1024", t);
 
-	std::cout << "\n<TBODY style=\"background: yellow\">";
+	cout << "\n<TBODY style=\"background: yellow\">";
 	BenchMarkSignature<RSASS<PSSR, SHA> >("TestData/rsa1024.dat", "RSA 1024", t);
 	BenchMarkSignature<RWSS<PSSR, SHA> >("TestData/rw1024.dat", "RW 1024", t);
 	BenchMarkSignature<LUCSS<PSSR, SHA> >("TestData/luc1024.dat", "LUC 1024", t);
@@ -257,7 +278,7 @@ void BenchmarkAll2(double t, double hertz)
 	BenchMarkSignature<ESIGN<SHA> >("TestData/esig1023.dat", "ESIGN 1023", t);
 	BenchMarkSignature<ESIGN<SHA> >("TestData/esig1536.dat", "ESIGN 1536", t);
 
-	std::cout << "\n<TBODY style=\"background: white\">";
+	cout << "\n<TBODY style=\"background: white\">";
 	BenchMarkSignature<RSASS<PSSR, SHA> >("TestData/rsa2048.dat", "RSA 2048", t);
 	BenchMarkSignature<RWSS<PSSR, SHA> >("TestData/rw2048.dat", "RW 2048", t);
 	BenchMarkSignature<LUCSS<PSSR, SHA> >("TestData/luc2048.dat", "LUC 2048", t);
@@ -265,7 +286,7 @@ void BenchmarkAll2(double t, double hertz)
 	BenchMarkSignature<LUC_HMP<SHA> >("TestData/lucs1024.dat", "LUC-HMP 1024", t);
 	BenchMarkSignature<ESIGN<SHA> >("TestData/esig2046.dat", "ESIGN 2046", t);
 
-	std::cout << "\n<TBODY style=\"background: yellow\">";
+	cout << "\n<TBODY style=\"background: yellow\">";
 	BenchMarkKeyAgreement<XTR_DH>("TestData/xtrdh171.dat", "XTR-DH 171", t);
 	BenchMarkKeyAgreement<XTR_DH>("TestData/xtrdh342.dat", "XTR-DH 342", t);
 	BenchMarkKeyAgreement<DH>("TestData/dh1024.dat", "DH 1024", t);
@@ -275,7 +296,7 @@ void BenchmarkAll2(double t, double hertz)
 	BenchMarkKeyAgreement<MQV>("TestData/mqv1024.dat", "MQV 1024", t);
 	BenchMarkKeyAgreement<MQV>("TestData/mqv2048.dat", "MQV 2048", t);
 
-	std::cout << "\n<TBODY style=\"background: white\">";
+	cout << "\n<TBODY style=\"background: white\">";
 	{
 		ECIES<ECP>::Decryptor cpriv(GlobalRNG(), ASN1::secp256k1());
 		ECIES<ECP>::Encryptor cpub(cpriv);
@@ -294,7 +315,7 @@ void BenchmarkAll2(double t, double hertz)
 		BenchMarkAgreement("ECMQVC over GF(p) 256", ecmqvc, t);
 	}
 
-	std::cout << "<TBODY style=\"background: yellow\">" << std::endl;
+	cout << "<TBODY style=\"background: yellow\">" << endl;
 	{
 		ECIES<EC2N>::Decryptor cpriv(GlobalRNG(), ASN1::sect233r1());
 		ECIES<EC2N>::Encryptor cpub(cpriv);
@@ -312,5 +333,5 @@ void BenchmarkAll2(double t, double hertz)
 		BenchMarkKeyGen("ECMQVC over GF(2^n) 233", ecmqvc, t);
 		BenchMarkAgreement("ECMQVC over GF(2^n) 233", ecmqvc, t);
 	}
-	std::cout << "</TABLE>" << std::endl;
+	cout << "</TABLE>" << endl;
 }

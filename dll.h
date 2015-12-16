@@ -1,3 +1,9 @@
+// dll.h - written and placed in the public domain by Wei Dai
+
+//! \file
+//! \headerfile dll.h
+//! \brief Functions and definitions required for building the FIPS-140 DLL on Windows
+
 #ifndef CRYPTOPP_DLL_H
 #define CRYPTOPP_DLL_H
 
@@ -39,20 +45,18 @@
 
 #ifdef CRYPTOPP_IMPORTS
 
-#if defined(_MSC_VER) && defined(_DLL)
+#ifdef _DLL
 // cause CRT DLL to be initialized before Crypto++ so that we can use malloc and free during DllMain()
-# ifdef NDEBUG
-#  pragma comment(lib, "msvcrt")
-# else
-#  pragma comment(lib, "msvcrtd")
-# endif // NDEBUG
-#endif  // _MSC_VER and _DLL
-
-#if defined(_MSC_VER)
-# pragma comment(lib, "cryptopp")
+#ifdef NDEBUG
+#pragma comment(lib, "msvcrt")
+#else
+#pragma comment(lib, "msvcrtd")
+#endif
 #endif
 
-#endif  // #ifdef CRYPTOPP_IMPORTS
+#pragma comment(lib, "cryptopp")
+
+#endif		// #ifdef CRYPTOPP_IMPORTS
 
 #include <new>	// for new_handler
 

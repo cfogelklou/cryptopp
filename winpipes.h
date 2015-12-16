@@ -1,20 +1,11 @@
 #ifndef CRYPTOPP_WINPIPES_H
 #define CRYPTOPP_WINPIPES_H
 
-#include "config.h"
-
 #ifdef WINDOWS_PIPES_AVAILABLE
 
-// Avoid _WINSOCK_DEPRECATED_NO_WARNINGS
-#if (_MSC_VER)
-# pragma warning (push)
-# pragma warning (disable: 4996)
-#endif
-
+#include "cryptlib.h"
 #include "network.h"
 #include "queue.h"
-#include "trap.h"
-
 #include <winsock2.h>
 
 NAMESPACE_BEGIN(CryptoPP)
@@ -30,7 +21,7 @@ public:
 	bool GetOwnership() const {return m_own;}
 	void SetOwnership(bool own) {m_own = own;}
 
-	operator HANDLE() {return m_h;}
+	operator HANDLE() const {return m_h;}
 	HANDLE GetHandle() const {return m_h;}
 	bool HandleValid() const;
 	void AttachHandle(HANDLE h, bool own=false);
@@ -62,7 +53,7 @@ protected:
 	virtual HANDLE GetHandle() const =0;
 	virtual void HandleError(const char *operation) const;
 	void CheckAndHandleError(const char *operation, BOOL result) const
-		{CRYPTOPP_ASSERT(result==TRUE || result==FALSE); if (!result) HandleError(operation);}
+		{assert(result==TRUE || result==FALSE); if (!result) HandleError(operation);}
 };
 
 //! pipe-based implementation of NetworkReceiver
@@ -76,6 +67,7 @@ public:
 	unsigned int GetReceiveResult();
 	bool EofReceived() const {return m_eofReceived;}
 
+	HANDLE GetHandle() const {return m_event;}
 	unsigned int GetMaxWaitObjectCount() const {return 1;}
 	void GetWaitObjects(WaitObjectContainer &container, CallStack const& callStack);
 
@@ -99,6 +91,7 @@ public:
 	bool MustWaitForEof() { return false; }
 	void SendEof() {}
 
+	HANDLE GetHandle() const {return m_event;}
 	unsigned int GetMaxWaitObjectCount() const {return 1;}
 	void GetWaitObjects(WaitObjectContainer &container, CallStack const& callStack);
 
@@ -145,11 +138,6 @@ private:
 
 NAMESPACE_END
 
-// Avoid _WINSOCK_DEPRECATED_NO_WARNINGS
-#if (_MSC_VER)
-# pragma warning (pop)
-#endif
-
-#endif
+#endif // WINDOWS_PIPES_AVAILABLE
 
 #endif

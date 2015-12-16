@@ -1,21 +1,28 @@
+// authenc.h - written and placed in the public domain by Wei Dai
+
+//! \file
+//! \headerfile authenc.h
+//! \brief Base classes for working with authenticated encryption modes of encryption
+
 #ifndef CRYPTOPP_AUTHENC_H
 #define CRYPTOPP_AUTHENC_H
 
 #include "cryptlib.h"
 #include "secblock.h"
-#include "trap.h"
 
 NAMESPACE_BEGIN(CryptoPP)
 
-//! .
+//! \class AuthenticatedSymmetricCipherBase
+//! \brief 
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE AuthenticatedSymmetricCipherBase : public AuthenticatedSymmetricCipher
 {
 public:
-	AuthenticatedSymmetricCipherBase() : m_state(State_Start) {}
+	AuthenticatedSymmetricCipherBase() : m_state(State_Start), m_bufferedDataLength(0),
+		m_totalHeaderLength(0), m_totalMessageLength(0), m_totalFooterLength(0) {}
 
 	bool IsRandomAccess() const {return false;}
 	bool IsSelfInverting() const {return true;}
-	void UncheckedSetKey(const byte *,unsigned int,const CryptoPP::NameValuePairs &) {CRYPTOPP_ASSERT(false);}
+	void UncheckedSetKey(const byte *,unsigned int,const CryptoPP::NameValuePairs &) {assert(false);}
 
 	void SetKey(const byte *userKey, size_t keylength, const NameValuePairs &params);
 	void Restart() {if (m_state > State_KeySet) m_state = State_KeySet;}

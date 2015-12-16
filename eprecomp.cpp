@@ -5,8 +5,9 @@
 #ifndef CRYPTOPP_IMPORTS
 
 #include "eprecomp.h"
+#include "integer.h"
+#include "algebra.h"
 #include "asn.h"
-#include "trap.h"
 
 NAMESPACE_BEGIN(CryptoPP)
 
@@ -26,8 +27,8 @@ template <class T> void DL_FixedBasePrecomputationImpl<T>::SetBase(const DL_Grou
 
 template <class T> void DL_FixedBasePrecomputationImpl<T>::Precompute(const DL_GroupPrecomputation<Element> &group, unsigned int maxExpBits, unsigned int storage)
 {
-	CRYPTOPP_ASSERT(m_bases.size() > 0);
-	CRYPTOPP_ASSERT(storage <= maxExpBits);
+	assert(m_bases.size() > 0);
+	assert(storage <= maxExpBits);
 
 	if (storage > 1)
 	{

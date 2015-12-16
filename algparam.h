@@ -1,16 +1,26 @@
+// algparam.h - written and placed in the public domain by Wei Dai
+
+//! \file
+//! \headerfile algparam.h
+//! \brief Classes for working with NameValuePairs
+
+
 #ifndef CRYPTOPP_ALGPARAM_H
 #define CRYPTOPP_ALGPARAM_H
 
 #include "cryptlib.h"
-#include "smartptr.h"
-#include "integer.h"
-#include "secblock.h"
+#include "config.h"
 
-#if GCC_DIAGNOSTIC_AWARE
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wunused-value"
-# pragma GCC diagnostic ignored "-Wunused-variable"
+// TODO: fix 6011 when the API/ABI can change
+#if (CRYPTOPP_MSC_VERSION >= 1400)
+# pragma warning(push)
+# pragma warning(disable: 6011 28193)
 #endif
+
+#include "smartptr.h"
+#include "secblock.h"
+#include "integer.h"
+#include "misc.h"
 
 NAMESPACE_BEGIN(CryptoPP)
 
@@ -21,14 +31,17 @@ class ConstByteArrayParameter
 {
 public:
 	ConstByteArrayParameter(const char *data = NULL, bool deepCopy = false)
+		: m_deepCopy(false), m_data(NULL), m_size(0)
 	{
 		Assign((const byte *)data, data ? strlen(data) : 0, deepCopy);
 	}
 	ConstByteArrayParameter(const byte *data, size_t size, bool deepCopy = false)
+		: m_deepCopy(false), m_data(NULL), m_size(0)
 	{
 		Assign(data, size, deepCopy);
 	}
 	template <class T> ConstByteArrayParameter(const T &string, bool deepCopy = false)
+		: m_deepCopy(false), m_data(NULL), m_size(0)
 	{
 		CRYPTOPP_COMPILE_ASSERT(sizeof(CPP_TYPENAME T::value_type) == 1);
 		Assign((const byte *)string.data(), string.size(), deepCopy);
@@ -36,6 +49,8 @@ public:
 
 	void Assign(const byte *data, size_t size, bool deepCopy)
 	{
+		// This fires, which means: no data with a size, or data with no size.
+		// assert((data && size) || !(data || size));
 		if (deepCopy)
 			m_block.Assign(data, size);
 		else
@@ -159,8 +174,9 @@ private:
 };
 
 template <class BASE, class T>
-GetValueHelperClass<T, BASE> GetValueHelper(const T *pObject, const char *name, const std::type_info &valueType, void *pValue, const NameValuePairs *searchFirst=NULL)
+GetValueHelperClass<T, BASE> GetValueHelper(const T *pObject, const char *name, const std::type_info &valueType, void *pValue, const NameValuePairs *searchFirst=NULL, BASE *dummy=NULL)
 {
+	CRYPTOPP_UNUSED(dummy);
 	return GetValueHelperClass<T, BASE>(pObject, name, valueType, pValue, searchFirst);
 }
 
@@ -172,6 +188,68 @@ GetValueHelperClass<T, T> GetValueHelper(const T *pObject, const char *name, con
 
 // ********************************************************
 
+// VC60 workaround
+#if defined(_MSC_VER) && (_MSC_VER < 1300)
+template <class R>
+R Hack_DefaultValueFromConstReferenceType(const R &)
+{
+	return R();
+}
+
+template <class R>
+bool Hack_GetValueIntoConstReference(const NameValuePairs &source, const char *name, const R &value)
+{
+	return source.GetValue(name, const_cast<R &>(value));
+}
+
+template <class T, class BASE>
+class AssignFromHelperClass
+{
+public:
+	AssignFromHelperClass(T *pObject, const NameValuePairs &source)
+		: m_pObject(pObject), m_source(source), m_done(false)
+	{
+		if (source.GetThisObject(*pObject))
+			m_done = true;
+		else if (typeid(BASE) != typeid(T))
+			pObject->BASE::AssignFrom(source);
+	}
+
+	template <class R>
+	AssignFromHelperClass & operator()(const char *name, void (T::*pm)(R))	// VC60 workaround: "const R &" here causes compiler error
+	{
+		if (!m_done)
+		{
+			R value = Hack_DefaultValueFromConstReferenceType(reinterpret_cast<R>(*(int *)NULL));
+			if (!Hack_GetValueIntoConstReference(m_source, name, value))
+				throw InvalidArgument(std::string(typeid(T).name()) + ": Missing required parameter '" + name + "'");
+			(m_pObject->*pm)(value);
+		}
+		return *this;
+	}
+
+	template <class R, class S>
+	AssignFromHelperClass & operator()(const char *name1, const char *name2, void (T::*pm)(R, S))	// VC60 workaround: "const R &" here causes compiler error
+	{
+		if (!m_done)
+		{
+			R value1 = Hack_DefaultValueFromConstReferenceType(reinterpret_cast<R>(*(int *)NULL));
+			if (!Hack_GetValueIntoConstReference(m_source, name1, value1))
+				throw InvalidArgument(std::string(typeid(T).name()) + ": Missing required parameter '" + name1 + "'");
+			S value2 = Hack_DefaultValueFromConstReferenceType(reinterpret_cast<S>(*(int *)NULL));
+			if (!Hack_GetValueIntoConstReference(m_source, name2, value2))
+				throw InvalidArgument(std::string(typeid(T).name()) + ": Missing required parameter '" + name2 + "'");
+			(m_pObject->*pm)(value1, value2);
+		}
+		return *this;
+	}
+
+private:
+	T *m_pObject;
+	const NameValuePairs &m_source;
+	bool m_done;
+};
+#else
 template <class T, class BASE>
 class AssignFromHelperClass
 {
@@ -219,10 +297,12 @@ private:
 	const NameValuePairs &m_source;
 	bool m_done;
 };
+#endif
 
 template <class BASE, class T>
-AssignFromHelperClass<T, BASE> AssignFromHelper(T *pObject, const NameValuePairs &source)
+AssignFromHelperClass<T, BASE> AssignFromHelper(T *pObject, const NameValuePairs &source, BASE *dummy=NULL)
 {
+	CRYPTOPP_UNUSED(dummy);
 	return AssignFromHelperClass<T, BASE>(pObject, source);
 }
 
@@ -260,7 +340,6 @@ public:
 	AlgorithmParametersBase(const char *name, bool throwIfNotUsed)
 		: m_name(name), m_throwIfNotUsed(throwIfNotUsed), m_used(false) {}
 
-    // TODO: determine a library policy; implement the policy.
 	virtual ~AlgorithmParametersBase() CRYPTOPP_THROW
 	{
 #ifdef CRYPTOPP_UNCAUGHT_EXCEPTION_AVAILABLE
@@ -273,7 +352,7 @@ public:
 				throw ParameterNotUsed(m_name);
 		}
 #ifndef CRYPTOPP_UNCAUGHT_EXCEPTION_AVAILABLE
-		catch(...)
+		catch(const Exception&)
 		{
 		}
 #endif
@@ -316,7 +395,7 @@ public:
 	void MoveInto(void *buffer) const
 	{
 		AlgorithmParametersTemplate<T>* p = new(buffer) AlgorithmParametersTemplate<T>(*this);
-		CRYPTOPP_UNUSED(p);
+		CRYPTOPP_UNUSED(p);	// silence warning
 	}
 
 protected:
@@ -327,6 +406,19 @@ CRYPTOPP_DLL_TEMPLATE_CLASS AlgorithmParametersTemplate<bool>;
 CRYPTOPP_DLL_TEMPLATE_CLASS AlgorithmParametersTemplate<int>;
 CRYPTOPP_DLL_TEMPLATE_CLASS AlgorithmParametersTemplate<ConstByteArrayParameter>;
 
+//! \class AlgorithmParameters
+//! \brief An object that implements NameValuePairs
+//! \tparam T the class or type
+//! \param name the name of the object or value to retrieve
+//! \param value reference to a variable that receives the value
+//! \param throwIfNotUsed if true, the object will throw an exception if the value is not accessed
+//! \note throwIfNotUsed is ignored if using a compiler that does not support std::uncaught_exception(),
+//!   such as MSVC 7.0 and earlier.
+//! \note A NameValuePairs object containing an arbitrary number of name value pairs may be constructed by
+//!   repeatedly using operator() on the object returned by MakeParameters, for example:
+//!   <pre>
+//!     AlgorithmParameters parameters = MakeParameters(name1, value1)(name2, value2)(name3, value3);
+//!   </pre>
 class CRYPTOPP_DLL AlgorithmParameters : public NameValuePairs
 {
 public:
@@ -345,6 +437,10 @@ public:
 
 	AlgorithmParameters & operator=(const AlgorithmParameters &x);
 
+	//! \tparam T the class or type
+	//! \param name the name of the object or value to retrieve
+	//! \param value reference to a variable that receives the value
+	//! \param throwIfNotUsed if true, the object will throw an exception if the value is not accessed
 	template <class T>
 	AlgorithmParameters & operator()(const char *name, const T &value, bool throwIfNotUsed)
 	{
@@ -355,6 +451,10 @@ public:
 		return *this;
 	}
 
+	//! \brief Appends a NameValuePair to a collection of NameValuePairs
+	//! \tparam T the class or type
+	//! \param name the name of the object or value to retrieve
+	//! \param value reference to a variable that receives the value
 	template <class T>
 	AlgorithmParameters & operator()(const char *name, const T &value)
 	{
@@ -368,14 +468,18 @@ protected:
 	bool m_defaultThrowIfNotUsed;
 };
 
-//! Create an object that implements NameValuePairs for passing parameters
-/*! \param throwIfNotUsed if true, the object will throw an exception if the value is not accessed
-	\note throwIfNotUsed is ignored if using a compiler that does not support std::uncaught_exception(),
-	such as MSVC 7.0 and earlier.
-	\note A NameValuePairs object containing an arbitrary number of name value pairs may be constructed by
-	repeatedly using operator() on the object returned by MakeParameters, for example:
-	AlgorithmParameters parameters = MakeParameters(name1, value1)(name2, value2)(name3, value3);
-*/
+//! \brief Create an object that implements NameValuePairs
+//! \tparam T the class or type
+//! \param name the name of the object or value to retrieve
+//! \param value reference to a variable that receives the value
+//! \param throwIfNotUsed if true, the object will throw an exception if the value is not accessed
+//! \note throwIfNotUsed is ignored if using a compiler that does not support std::uncaught_exception(),
+//!   such as MSVC 7.0 and earlier.
+//! \note A NameValuePairs object containing an arbitrary number of name value pairs may be constructed by
+//!   repeatedly using \p operator() on the object returned by \p MakeParameters, for example:
+//!   <pre>
+//!     AlgorithmParameters parameters = MakeParameters(name1, value1)(name2, value2)(name3, value3);
+//!   </pre>
 #ifdef __BORLANDC__
 typedef AlgorithmParameters MakeParameters;
 #else
@@ -390,10 +494,11 @@ AlgorithmParameters MakeParameters(const char *name, const T &value, bool throwI
 #define CRYPTOPP_SET_FUNCTION_ENTRY(name)		(Name::name(), &ThisClass::Set##name)
 #define CRYPTOPP_SET_FUNCTION_ENTRY2(name1, name2)	(Name::name1(), Name::name2(), &ThisClass::Set##name1##And##name2)
 
-NAMESPACE_END
-
-#if GCC_DIAGNOSTIC_AWARE
-# pragma GCC diagnostic pop
+// TODO: fix 6011 when the API/ABI can change
+#if (CRYPTOPP_MSC_VERSION >= 1400)
+# pragma warning(pop)
 #endif
+
+NAMESPACE_END
 
 #endif

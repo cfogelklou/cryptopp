@@ -1,5 +1,9 @@
 // sha3.h - written and placed in the public domain by Wei Dai
 
+//! \file
+//! \headerfile sha3.h
+//! \brief Classes for SHA-3 message digests
+
 #ifndef CRYPTOPP_SHA3_H
 #define CRYPTOPP_SHA3_H
 
@@ -15,7 +19,7 @@ public:
 	SHA3(unsigned int digestSize) : m_digestSize(digestSize) {Restart();}
 	unsigned int DigestSize() const {return m_digestSize;}
 	std::string AlgorithmName() const {return "SHA-3-" + IntToString(m_digestSize*8);}
-	unsigned int OptimalDataAlignment() const {return GetStrictAlignmentOf<word64>();}
+	unsigned int OptimalDataAlignment() const {return GetAlignmentOf<word64>();}
 
 	void Update(const byte *input, size_t length);
 	void Restart();

@@ -37,18 +37,16 @@ void TTMAC_Base::TruncatedFinal(byte *hash, size_t size)
 
 	word32 t2 = m_digest[2];
 	word32 t3 = m_digest[3];
-
-	// Signed/unsigned warning and GCC 4.8 issue under Debian/i386?
-	if (size != static_cast<size_t>(DIGESTSIZE))
+	if (size != DIGESTSIZE)
 	{
 		switch (size)
 		{
 			case 16:
 				m_digest[3] += m_digest[1] + m_digest[4];
-
+				// fall through
 			case 12:
 				m_digest[2] += m_digest[0] + t3;
-
+				// fall through
 			case 8:
 				m_digest[0] += m_digest[1] + t3;
 				m_digest[1] += m_digest[4] + t2;
