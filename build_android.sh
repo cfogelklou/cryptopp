@@ -15,5 +15,6 @@ ndk-build
 cd jni
 cd ..
 mv obj/local obj/staticlib
+rm -rf ../../../app_android/android/src/main/jni/staticlib
 mv obj/staticlib ../../../app_android/android/src/main/jni/
 
