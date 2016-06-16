@@ -10,6 +10,10 @@ else
 fi
 rm -rf ../obj
 ndk-build
-
-
+#cd ..
+#mkdir ../../../../app_android/android/src/main/jni/staticlib
+cd jni
+cd ..
+mv obj/local obj/staticlib
+mv obj/staticlib ../../../app_android/android/src/main/jni/
 
